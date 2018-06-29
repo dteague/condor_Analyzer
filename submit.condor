@@ -1,0 +1,19 @@
+Universe             = vanilla
+Executable           = condor_starter.sh
+
+GetEnv               = false
++RequiresCVMFS       = True
++RequiresSharedFS    = True
+
+####WhenToTransferOutput = On_Exit 
+ShouldTransferFiles  = yes 
++IsFastQueueJob      = True 
+request_memory       = 1000 
+request_disk         = 2048000
+
+
+Transfer_Input_Files = sample_list_$(Process).dat, ../Analyzer_C.so, ../Analyzer_C_ACLiC_dict_rdict.pcm, ../userproxy, ../condor_runfile.py, ../hist.config, ../condor_starter.sh
+output               = output$(Process).out
+error 		     = error$(Process).err
+Log                  = select.log 
+
