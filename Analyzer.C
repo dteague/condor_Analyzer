@@ -45,6 +45,8 @@ public:
     delete treeReader;
   }
 
+  void set_events() {histo.setup_hevents(cutNames);}
+  
 private:
   TChain chain;
   TTreeReader *treeReader;
@@ -67,9 +69,10 @@ private:
   
   vector<bool> passCut;
   bool passedAllCuts;
-  bool set_cut(int cut, bool pass);
+  bool set_cut(int cut, bool pass, bool);
 
   enum CUT_NAMES { E_JET_N, E_MET, E_LEP, E_VBS, E_LAST_CUT };
+  vector<string> cutNames = {"Jet Number", "Met", "Lepton", "VBS"};
 
 };
 
@@ -91,8 +94,8 @@ void Analyzer::selection() {
   Jet.basic_cuts(15, 4.7);
   overlap(Muon_T);
 
-  passedAllCuts = passedAllCuts && set_cut(E_JET_N, Jet.size() >= 2);
-  passedAllCuts = passedAllCuts && set_cut(E_MET, MET.At(0) > 30);    /// MET CUT
+  passedAllCuts = set_cut(E_JET_N, Jet.size() >= 2, passedAllCuts);
+  passedAllCuts = set_cut(E_MET, MET.At(0) > 30, passedAllCuts);    /// MET CUT
   
   bool leptonCuts =  (Muon_T.size()+Electron.size() == 3);
   ZCandidate Z(Muon_T, Electron);
@@ -102,22 +105,25 @@ void Analyzer::selection() {
   for(auto lep : Electron) triLep += lep;
   leptonCuts = leptonCuts && (triLep.M() > 100);
   leptonCuts = leptonCuts && (fabs( triLep.Eta() - 0.5*(Jet[1].Eta() + Jet[2].Eta())) < 2.5);
-  passedAllCuts = passedAllCuts && set_cut(E_LEP, leptonCuts);
+  passedAllCuts = set_cut(E_LEP, leptonCuts, passedAllCuts);
 
   /// vbs selection
   bool vbsSelection = (Jet[0].Pt() > 50 && Jet[1].Pt() > 50 ) && (fabs(Jet[0].Eta()-Jet[1].Eta()) > 2.5) && ((Jet[0]+Jet[1]).M() > 500);
-  passedAllCuts = passedAllCuts && set_cut(E_VBS, vbsSelection);
-  
+  passedAllCuts = set_cut(E_VBS, vbsSelection, passedAllCuts);
+
+
   if (passedAllCuts) passed++;
 }
 
-bool Analyzer::set_cut(int cut, bool pass) {
+bool Analyzer::set_cut(int cut, bool pass, bool currentTotalPass) {
   passCut[cut] = pass;
-  return pass;
+  return currentTotalPass && pass;
 }
 
 
 void Analyzer::fill_histo() {
+  histo.fill_hevents(passCut, passedAllCuts);
+
   ///////////////////////////////
   /////// Pass all cuts ////////
   /////////////////////////////
@@ -129,8 +135,8 @@ void Analyzer::fill_histo() {
   if(pass_ncut(E_VBS)) {
     histo.fill("BEFORE_hvbsjetsDEta", Jet[0].Eta()-Jet[1].Eta());
     histo.fill("BEFORE_hvbsjetsMass", (Jet[0]+Jet[1]).M());
-  }
 
+  }
 
 }
     //////////////////////////////////////////////

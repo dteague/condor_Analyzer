@@ -1,11 +1,11 @@
 # root://cmseos.fnal.gov//store/user/snowmass/noreplica/YR_Delphes/Delphes342pre15/
 
-TTZJets_TuneCUETP8M2_14TeV_madgraphMLM-pythia8   296
-TTJets_DiLept_TuneCUETP8M1_14TeV-madgraphMLM-pythia8   285
-ZGTo2LG_TuneCUETP8M1_14TeV-amcatnloFXFX-pythia8  296
+# TTZJets_TuneCUETP8M2_14TeV_madgraphMLM-pythia8   296
+# TTJets_DiLept_TuneCUETP8M1_14TeV-madgraphMLM-pythia8   285
+# ZGTo2LG_TuneCUETP8M1_14TeV-amcatnloFXFX-pythia8  296
 
 root://cmseos.fnal.gov//store/user/snowmass/noreplica/YR_Delphes/Delphes342pre14/
-#DYJets_incl_MLL-50_TuneCUETP8M1_14TeV-madgraphMLM-pythia8  8817
+DYJets_incl_MLL-50_TuneCUETP8M1_14TeV-madgraphMLM-pythia8  8817
 
 
 # root://cms-xrd-global.cern.ch//store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre15/

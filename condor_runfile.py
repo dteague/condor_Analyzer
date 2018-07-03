@@ -45,12 +45,12 @@ f = open("sample_list_" + str(processNum) + ".dat", 'r')
 test = Analyzer()
 for itemList in f:
     test.add_run_file(itemList.strip())
-
+test.set_events()
 
 while test.next():
     test.selection()
     test.fill_histo()
-    if test.event_number() % 1000 == 0: print str(test.event_number()) + " Events" 
+    if test.event_number() % 5000 == 0: print str(test.event_number()) + " Events"
 test.write_out(sampleName+"_" + processNum + ".root")
 
 print time.clock()-timer

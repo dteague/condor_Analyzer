@@ -24,12 +24,37 @@ public:
   }
   ~Histograms() {}
 
+  void setup_hevents(vector<string> binNames) {
+    madeEvents = true;
 
+    events.resize(binNames.size()+2);
+    eventTree = new TTree("EventsPassed", "EventsPassed");
+    eventBranch = eventTree->Branch("EventBranch", &events);
+
+    eventCutNames = new TList();
+    for(auto names: binNames) eventCutNames->Add(new TObjString(names.c_str()));
+  }
+
+  void fill_hevents(vector<bool>& cutflows, bool pass) {
+    if(!madeEvents) return;
+    events[0] = true;
+    for (int i=0;i<(int)cutflows.size();i++)  {
+      events[i+1] = cutflows.at(i);
+    }
+    events[cutflows.size()+1] = pass;
+    
+    eventTree->Fill();
+  }
+  
   void write_out(string outfile) {
     TFile* out = new TFile(outfile.c_str(), "RECREATE");
     out->cd();
     for(auto graph : hMap) {
       out->WriteTObject(graph.second);
+    }
+    if(madeEvents) {
+      out->WriteTObject(eventTree);
+      out->WriteTObject(eventCutNames);
     }
     out->Close();
   }
@@ -52,4 +77,9 @@ public:
 
 private:
   unordered_map<string, TH1D*> hMap;
+  bool madeEvents = false;
+  vector<bool> events;
+  TTree* eventTree;
+  TBranch* eventBranch;
+  TList* eventCutNames;
 };
