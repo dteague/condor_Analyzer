@@ -1,6 +1,6 @@
 
 void getCutflow() {
-  TFile* infile = new TFile("jet_4.root");
+  TFile* infile = new TFile("2Jets_3.root");
   TTree* tree = (TTree*)infile->Get("EventsPassed");
   TBranch* branch = 0;
   vector<bool>* cutBins = 0;
@@ -8,7 +8,7 @@ void getCutflow() {
   int nevents = tree->GetEntries();
 
   vector<int> cutflow;
-  vector<int> cutOrder = {0, 3, 1, 2, 4};
+  vector<int> cutOrder = {0, 1, 2, 4, 3};
   
   cutflow.resize(cutOrder.size());
   

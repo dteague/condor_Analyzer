@@ -50,7 +50,14 @@ test.set_events()
 while test.next():
     test.selection()
     test.fill_histo()
-    if test.event_number() % 5000 == 0: print str(test.event_number()) + " Events"
+
+    event = test.event_number()
+    if( event < 10 or ( event < 100 and event % 10 == 0 ) or
+    ( event < 1000 and event % 100 == 0 ) or
+    ( event < 10000 and event % 1000 == 0 ) or
+    ( event < 100000 and event % 10000 == 0 )  or
+    ( event >= 100000 and event % 100000 == 0 ) ):
+        print event, "Events"
 test.write_out(sampleName+"_" + processNum + ".root")
 
 print time.clock()-timer

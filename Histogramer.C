@@ -27,9 +27,10 @@ public:
   void setup_hevents(vector<string> binNames) {
     madeEvents = true;
 
-    events.resize(binNames.size()+2);
-    eventTree = new TTree("EventsPassed", "EventsPassed");
-    eventBranch = eventTree->Branch("EventBranch", &events);
+    events = new TH1D("Events", "Events", 2, 0, 2);
+    eventsCutFlow.resize(binNames.size()+2);
+    eventTree = new TTree("EventsCutFlow", "EventsCutFlow");
+    eventBranch = eventTree->Branch("EventBranch", &eventsCutFlow);
 
     eventCutNames = new TList();
     for(auto names: binNames) eventCutNames->Add(new TObjString(names.c_str()));
@@ -37,11 +38,13 @@ public:
 
   void fill_hevents(vector<bool>& cutflows, bool pass) {
     if(!madeEvents) return;
-    events[0] = true;
+    eventsCutFlow[0] = true;
+    events->Fill(0);
     for (int i=0;i<(int)cutflows.size();i++)  {
-      events[i+1] = cutflows.at(i);
+      eventsCutFlow[i+1] = cutflows.at(i);
     }
-    events[cutflows.size()+1] = pass;
+    eventsCutFlow[cutflows.size()+1] = pass;
+    if(pass) events->Fill(1);
     
     eventTree->Fill();
   }
@@ -55,6 +58,7 @@ public:
     if(madeEvents) {
       out->WriteTObject(eventTree);
       out->WriteTObject(eventCutNames);
+      out->WriteTObject(events);
     }
     out->Close();
   }
@@ -78,7 +82,9 @@ public:
 private:
   unordered_map<string, TH1D*> hMap;
   bool madeEvents = false;
-  vector<bool> events;
+
+  TH1D* events;
+  vector<bool> eventsCutFlow;
   TTree* eventTree;
   TBranch* eventBranch;
   TList* eventCutNames;

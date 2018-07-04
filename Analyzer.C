@@ -65,12 +65,14 @@ private:
   Histograms histo;
 
   void overlap(Part& Muon);
-  bool pass_ncut(int);
+  bool pass_ncut(int) const;
   
   vector<bool> passCut;
-  bool passedAllCuts;
-  bool set_cut(int cut, bool pass, bool);
+  void set_cut(int cut, bool pass) { passCut[cut] = pass;}
 
+
+  bool pass_allCuts() const;
+  
   enum CUT_NAMES { E_JET_N, E_MET, E_LEP, E_VBS, E_LAST_CUT };
   vector<string> cutNames = {"Jet Number", "Met", "Lepton", "VBS"};
 
@@ -88,14 +90,20 @@ bool Analyzer::next() {
 }
     
 void Analyzer::selection() {
-  passedAllCuts = true;
-  Muon_T.basic_cuts(15, 2.4);
-  Electron.basic_cuts(15, 2.4);
-  Jet.basic_cuts(15, 4.7);
+
+  Muon_T.basic_cuts(20, 2.5);
+  Electron.basic_cuts(20, 2.5);
+  Jet.basic_cuts(30, 4.7); 
   overlap(Muon_T);
 
-  passedAllCuts = set_cut(E_JET_N, Jet.size() >= 2, passedAllCuts);
-  passedAllCuts = set_cut(E_MET, MET.At(0) > 30, passedAllCuts);    /// MET CUT
+  set_cut(E_JET_N, (Jet.size() >= 2));
+  set_cut(E_MET, (MET.At(0) > 30.));    /// MET CUT
+  if(!passCut.at(E_JET_N)) {
+    set_cut(E_LEP, false);
+    set_cut(E_VBS, false);
+    return;
+  }
+
   
   bool leptonCuts =  (Muon_T.size()+Electron.size() == 3);
   ZCandidate Z(Muon_T, Electron);
@@ -104,66 +112,72 @@ void Analyzer::selection() {
   for(auto lep : Muon_T) triLep += lep;
   for(auto lep : Electron) triLep += lep;
   leptonCuts = leptonCuts && (triLep.M() > 100);
-  leptonCuts = leptonCuts && (fabs( triLep.Eta() - 0.5*(Jet[1].Eta() + Jet[2].Eta())) < 2.5);
-  passedAllCuts = set_cut(E_LEP, leptonCuts, passedAllCuts);
+  leptonCuts = leptonCuts && (fabs( triLep.Eta() - 0.5*(Jet.at(0).Eta() + Jet.at(1).Eta())) < 2.5);
+  
+  set_cut(E_LEP, leptonCuts);
 
   /// vbs selection
-  bool vbsSelection = (Jet[0].Pt() > 50 && Jet[1].Pt() > 50 ) && (fabs(Jet[0].Eta()-Jet[1].Eta()) > 2.5) && ((Jet[0]+Jet[1]).M() > 500);
-  passedAllCuts = set_cut(E_VBS, vbsSelection, passedAllCuts);
+  bool vbsSelection = (Jet.at(0).Pt() > 50 && Jet.at(1).Pt() > 50 ) && (fabs(Jet.at(0).Eta()-Jet.at(1).Eta()) > 2.5) && ((Jet.at(0)+Jet.at(1)).M() > 500);
+  set_cut(E_VBS, vbsSelection);
 
 
-  if (passedAllCuts) passed++;
+  if (pass_allCuts()) passed++;
 }
 
-bool Analyzer::set_cut(int cut, bool pass, bool currentTotalPass) {
-  passCut[cut] = pass;
-  return currentTotalPass && pass;
-}
 
 
 void Analyzer::fill_histo() {
-  histo.fill_hevents(passCut, passedAllCuts);
+  histo.fill_hevents(passCut, pass_allCuts());
 
   ///////////////////////////////
   /////// Pass all cuts ////////
   /////////////////////////////
-  if( pass_ncut(E_LEP)) {
-    histo.fill("AFTER_hvbsjetsDEta", Jet[0].Eta()-Jet[1].Eta());
-    histo.fill("AFTER_hvbsjetsMass", (Jet[0]+Jet[1]).M());
+
+  if(pass_allCuts()) {
+    histo.fill("hno_vbsjet_DEta", fabs(Jet.at(0).Eta()-Jet.at(1).Eta()));
+    histo.fill("hno_vbsjet_Mass", (Jet.at(0)+Jet.at(1)).M());
+
+    
+    histo.fill("hno_leadjet_Pt", Jet.at(0).Pt());
+    histo.fill("hno_leadjet_Eta", fabs(Jet.at(0).Eta()));
+
+    for( auto jet : Jet) {
+      histo.fill("hno_jet_Pt",jet.Pt());
+      histo.fill("hno_jet_Eta", fabs(jet.Eta()));
+    }
+    histo.fill("hno_jet_N",Jet.size());
+    histo.fill("hno_met",MET.At(0));
+    for( auto lep : Muon_T) {
+      histo.fill("hno_lep_Pt",lep.Pt());
+      histo.fill("hno_lep_Eta", fabs(lep.Eta()));
+    }
+    for( auto lep : Electron) {
+      histo.fill("hno_lep_Pt",lep.Pt());
+      histo.fill("hno_lep_Eta",fabs(lep.Eta()));
+    }
+
+    TLorentzVector triLep;
+    for(auto lep : Muon_T) triLep += lep;
+    for(auto lep : Electron) triLep += lep;
+    histo.fill("hno_trilep_Mass", triLep.M());
+    histo.fill("hno_trilep_Zepp", fabs(triLep.Eta() - 0.5*(Jet.at(0).Eta() + Jet.at(1).Eta())));
+
   }
-
-  if(pass_ncut(E_VBS)) {
-    histo.fill("BEFORE_hvbsjetsDEta", Jet[0].Eta()-Jet[1].Eta());
-    histo.fill("BEFORE_hvbsjetsMass", (Jet[0]+Jet[1]).M());
-
-  }
-
 }
-    //////////////////////////////////////////////
-    ///////////// FILL UP HISTO //////////////////
-    //////////////////////////////////////////////
-    // histo.fill("hleadjetPt", Jet[0].Pt());
-    // histo.fill("hleadjetEta", Jet[0].Eta());
-    // histo.fill("hlepN", Muon_T.size()+Electron.size());
 
 
-    // for( auto jet : Jet) {
-
-    //   histo.fill("hjetPt",jet.Pt());
-    //   histo.fill("hjetEta",jet.Eta());
-    // }
-    // histo.fill("hjetN",Jet.size());
-    // histo.fill("htauN",Tau.size());
-    // histo.fill("hMet",MET.At(0));
-
-
-
-
-bool Analyzer::pass_ncut(int cut) {
+bool Analyzer::pass_ncut(int cut) const {
   for( int i = 0; i < E_LAST_CUT; i++) {
     if( i != cut && !passCut.at(i) ) {
       return false;
     }
+  }
+  return true;
+}
+
+bool Analyzer::pass_allCuts() const {
+  for(auto cut : passCut) {
+    if(!cut) return false;
   }
   return true;
 }
@@ -173,35 +187,25 @@ bool Analyzer::pass_ncut(int cut) {
 
 
 
-
 void Analyzer::overlap(Part& Muon) {
-  for( auto it = Jet.begin(); it != Jet.end(); it++) {
+  vector<int> passedOverlap;
+  for(int i = 0; i < Jet.size(); i++) {
     bool failed = false;
     for( auto e : Electron) {
-      if(it->DeltaR(e) < 0.05) {
-	Jet.remove(it - Jet.begin());
+      if(Jet.at(i).DeltaR(e) < 0.05) {
 	failed = true;
 	break;
       }
     }
-    if(failed) {
-      it--;
-      continue;
-    }
+    if(failed) continue;
     for( auto mu : Muon) {
-      if(it->DeltaR(mu) < 0.05) {
-	Jet.remove(it - Jet.begin());
+      if(Jet.at(i).DeltaR(mu) < 0.05) {
 	failed = true;
 	break;
       }
     }
-    if(failed) {
-      it--;
-      continue;
-    }
-    // if(Jet.is_tau(it - Jet.begin())) {
-    //   Tau.add_tau(*it);
-    // }
+    if(! failed) passedOverlap.push_back(i);
   }
-  
+  Jet.remove(passedOverlap);
 }
+  

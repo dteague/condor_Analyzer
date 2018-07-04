@@ -20,7 +20,7 @@ public:
 
   Part(TTreeReader *reader, string name) : Part(reader, name, 0) {
     M = new TTreeReaderArray<float>(*reader, (name+".Mass").c_str());
-    isTau = new TTreeReaderArray<uint>(*reader, (name+".TauTag").c_str());
+
     isJet=true;
   }
 
@@ -29,29 +29,37 @@ public:
   virtual void setup_lvectors() {
     vecs.clear();
     thisCharge.clear();
-    thisTau.clear();
+
     TLorentzVector tmp_vec;
     for(int i = 0; i < (int)Pt->GetSize(); i++) {
       if(isJet) {
-	mass = M->operator[](i);
-	thisTau.push_back((bool)isTau->At(i));
+	mass = M->At(i);
       }
-      tmp_vec.SetPtEtaPhiM(Pt->operator[](i), Eta->operator[](i), Phi->operator[](i), mass);
+      tmp_vec.SetPtEtaPhiM(Pt->At(i), Eta->At(i), Phi->At(i), mass);
       vecs.push_back(tmp_vec);
       thisCharge.push_back(Charge->At(i));
     }
   }
 
-  void remove(int nAfter) {
-    vecs.erase(begin() + nAfter);
-    thisCharge.erase(thisCharge.begin() + nAfter);
+  void remove(vector<int> toKeep) {
+    vector<TLorentzVector> tmpVec = vecs;
+    vector<int> tmpCharge = thisCharge;
+    
+    vecs.clear();
+    thisCharge.clear();
+    
+    for(auto index: toKeep) {
+      vecs.push_back(tmpVec.at(index));
+      thisCharge.push_back(tmpCharge.at(index));
+    }
+    
+    
   }
 
   int q(int spot) const {return thisCharge.at(spot);}
-  bool is_tau(int spot) const {return thisTau.at(spot);}
 
   inline int size() const {return vecs.size();} 
-  const TLorentzVector operator[](int i) {return vecs[i];} 
+  const TLorentzVector at(int i) const {return vecs.at(i);} 
   inline iterator begin() noexcept { return vecs.begin(); }
   inline const_iterator cbegin() const noexcept { return vecs.cbegin(); }
   inline iterator end() noexcept { return vecs.end(); }
@@ -70,17 +78,17 @@ protected:
 
   vector<TLorentzVector> vecs;
   vector<int> thisCharge;
-  vector<bool> thisTau;
 };
 
 void Part::basic_cuts(double ptCut, double etaCut) {
-  for( auto p = begin(); p != end(); p++) {
-    if(p->Pt() > ptCut) continue;
+  vector<int> passCuts;
+  int i = 0;
+  for( auto p = begin(); p != end(); p++,i++) {
+    if(p->Pt() < ptCut) continue;
     if(fabs(p->Eta()) > etaCut) continue;
-
-    remove(p - begin());
-    p--;
+    passCuts.push_back(i);
   }
+  remove(passCuts);
 }
 
 
