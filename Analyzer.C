@@ -1,5 +1,5 @@
 #include "Particles.C"
-#include "Histogramer.C"
+#include "Histogramer.hpp"
 #include <TTreeReader.h>
 #include <TChain.h>
 #include <signal.h>
