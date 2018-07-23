@@ -61,9 +61,9 @@ in the directory
 .samples
 
 '''
-vomsString = "voms-proxy-info |  awk '{if($1==\"timeleft\" && $3 != \"0:00:00\")print $3}'"
-vomsSetup= check_output(vomsString, shell=True)
-if vomsSetup == "":
+vomsString = "voms-proxy-info --timeleft"
+timeleft= check_output(vomsString, shell=True)
+if int(timeleft) < 10000 :
     print "We need your password: please enter password"
     password = getpass.getpass()
     p = Popen(['voms-proxy-init -voms cms -pwstdin'], stdin=PIPE, shell=True)
@@ -76,30 +76,34 @@ check_output("cp $(voms-proxy-info -path) userproxy", shell=True)
         
 print "Sourcing files to run over:"
 
-for file_bundle in working_files:
-    fileMap = []
-    totalBitSize = 0
-    nameFiles = file_bundle[0]
-    num_files = int(file_bundle[1])
+# for file_bundle in working_files:
+#     fileMap = []
+#     totalBitSize = 0
+#     nameFiles = file_bundle[0]
+#     num_files = int(file_bundle[1])
 
-    if nameFiles.replace('/','_')+'.txt' in os.listdir('.samples'): continue
+#     if nameFiles.replace('/','_')+'.txt' in os.listdir('.samples'): continue
     
-    f = open('.samples/' + nameFiles.replace('/','_')+'.txt','w')
-    for i in range(1, num_files+1):
-        statCommand = 'xrdfs root://' + xrootdStatName[1] + '/ stat '
-        fullFileName = '/' + xrootdStatName[2] + nameFiles + '_200PU/' + nameFiles + "_" + str(i) + "_0.root"
-        sizeOutput = check_output(statCommand + fullFileName + " | sed -n 's/Size:\s*\(.*\)/\\1/p'", shell=True).strip()
-        if sizeOutput == "": continue
-        totalBitSize += int(sizeOutput)
-        f.write("root://" + xrootdStatName[1] + '/' + fullFileName + ", " + sizeOutput + "\n")
-    f.close()
+#     f = open('.samples/' + nameFiles.replace('/','_')+'.txt','w')
+#     for i in range(1, num_files+1):
+#         statCommand = 'xrdfs root://' + xrootdStatName[1] + '/ stat '
+#         fullFileName = '/' + xrootdStatName[2] + nameFiles + '_200PU/' + nameFiles + "_" + str(i) + "_0.root"
+#         sizeOutput = check_output(statCommand + fullFileName + " | sed -n 's/Size:\s*\(.*\)/\\1/p'", shell=True).strip()
+#         if sizeOutput == "": continue
+#         totalBitSize += int(sizeOutput)
+#         f.write("root://" + xrootdStatName[1] + '/' + fullFileName + ", " + sizeOutput + "\n")
+#     f.close()
 
     
 allFiles_bitsize = 0;
 for file_bundle in working_files:
-    filename = ".samples/" + file_bundle[0].replace('/','_') + ".txt"
-    allFiles_bitsize = allFiles_bitsize + int(check_output("awk '{tally += $2;}END{print tally;}' < " + filename, shell=True))
+    f = open(".samples/" + file_bundle[0].replace('/','_') + ".txt", 'r')
+    
+    for line in f:
+        allFiles_bitsize += int(line.split(',')[1])
+    f.close()
 
+    
 splitSize = (allFiles_bitsize+1) / spliting
 print splitSize / bitsTo1000Events / 60, "minutes to run (estimate)"
 

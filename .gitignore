@@ -1,7 +1,12 @@
 *~
 */*
+!/obj
+!/scripts/*
 Analyzer_C*
 *root
 sample*
 Sample*
 *pyc
+obj/*.o
+userproxy
+Analyzer

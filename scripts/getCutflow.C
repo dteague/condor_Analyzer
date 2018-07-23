@@ -1,7 +1,7 @@
 
 void getCutflow() {
-  TFile* infile = new TFile("2Jets_3.root");
-  TTree* tree = (TTree*)infile->Get("EventsPassed");
+  TFile* infile = new TFile("test_0.root");
+  TTree* tree = (TTree*)infile->Get("EventsCutFlow");
   TBranch* branch = 0;
   vector<bool>* cutBins = 0;
   tree->SetBranchAddress("EventBranch", &cutBins, &branch);

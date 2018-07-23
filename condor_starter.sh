@@ -10,6 +10,8 @@ export X509_USER_PROXY=userproxy
 
 echo "$1 is input command"
 
-echo .L Analyzer.C+ | root.exe -b 2>/dev/null
+ls
+mkdir obj
+make -j 10
 
-python condor_runfile.py $1 test
+./Analyzer -i sample_list_$1.dat -o test_$1.root
