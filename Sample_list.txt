@@ -14,7 +14,7 @@ WZZ 1
 WZ_0Jet 1
 WZ_1Jet 1
 WZ_2Jet 1
-#WZ_EWK 1
+WZ_EWK 1
 ZG 1
 ZZZ 1
 ZZ_4L 1

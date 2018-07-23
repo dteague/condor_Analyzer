@@ -20,6 +20,7 @@ Samplefile = open('Sample_list.txt', 'r')
 xrootd_area = ""
 working_files = []
 PU_tag = "_200PU/"
+signal = "WZ_EWK"
 
 bitsTo1000Events = 70000000
 
@@ -76,24 +77,6 @@ check_output("cp $(voms-proxy-info -path) userproxy", shell=True)
         
 print "Sourcing files to run over:"
 
-# for file_bundle in working_files:
-#     fileMap = []
-#     totalBitSize = 0
-#     nameFiles = file_bundle[0]
-#     num_files = int(file_bundle[1])
-
-#     if nameFiles.replace('/','_')+'.txt' in os.listdir('.samples'): continue
-    
-#     f = open('.samples/' + nameFiles.replace('/','_')+'.txt','w')
-#     for i in range(1, num_files+1):
-#         statCommand = 'xrdfs root://' + xrootdStatName[1] + '/ stat '
-#         fullFileName = '/' + xrootdStatName[2] + nameFiles + '_200PU/' + nameFiles + "_" + str(i) + "_0.root"
-#         sizeOutput = check_output(statCommand + fullFileName + " | sed -n 's/Size:\s*\(.*\)/\\1/p'", shell=True).strip()
-#         if sizeOutput == "": continue
-#         totalBitSize += int(sizeOutput)
-#         f.write("root://" + xrootdStatName[1] + '/' + fullFileName + ", " + sizeOutput + "\n")
-#     f.close()
-
     
 allFiles_bitsize = 0;
 for file_bundle in working_files:
@@ -121,6 +104,10 @@ for file_bundle in working_files:
     f.close()
 
     print "Binning sample :", nameFiles
+
+    extraOptions = ""
+    if nameFiles != signal: extraOptions += "-p "
+ 
 
     
     bins = pack(fileMap, splitSize)

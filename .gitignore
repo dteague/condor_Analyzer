@@ -1,7 +1,9 @@
-*~
 */*
+!/src/*
 !/obj
 !/scripts/*
+*/*~
+*~
 Analyzer_C*
 *root
 sample*
