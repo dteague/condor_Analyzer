@@ -1,5 +1,16 @@
 #include "Particles.h"
 
+typedef std::bitset<16> IntBits;
+
+namespace BTAG {
+  int loose = 0;
+  int medium = 1;
+  int tight = 2;
+  int looseMTD = 3;
+  int mediumMTD = 4;
+  int tightMTD = 5;
+}
+
 using namespace ROOT::Internal;
 
 void Part::basic_cuts(double ptCut, double etaCut) {
@@ -30,7 +41,7 @@ Part::Part(TTreeReader *reader, string name, double _mass) : mass(_mass) {
   Eta = new TTreeReaderArray<float>(*reader, (name+".Eta").c_str());
   Phi = new TTreeReaderArray<float>(*reader, (name+".Phi").c_str());
   Charge = new TTreeReaderArray<int>(*reader, (name+".Charge").c_str());
-  if(mass > -1) iso = new TTreeReaderArray<float>(*reader, (name+".IsolationVar").c_str());
+  if(mass > -1) iso = new TTreeReaderArray<float>(*reader, (name+".IsolationVarRhoCorr").c_str());
 }
 
 Part::Part(TTreeReader *reader, string name) : Part(reader, name, -1) {
@@ -64,7 +75,7 @@ void Part::setup_lvectors() {
 int Part::n_bjets() const {
   int numberBjets = 0;
   for(auto isABjet : isBJet) {
-    if(isABjet) numberBjets++;
+    if(IntBits(isABjet).test(BTAG::tightMTD)) numberBjets++;
   }
   return numberBjets;
 }
@@ -73,7 +84,7 @@ int Part::n_bjets() const {
 void Part::remove(vector<int> toKeep) {
   vector<TLorentzVector> tmpVec = vecs;
   vector<int> tmpCharge = thisCharge;
-  vector<bool> tmpBJet = isBJet;
+  vector<uint> tmpBJet = isBJet;
   vector<float> tmpIso = isoVar;
 
   vecs.clear();

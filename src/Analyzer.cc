@@ -3,7 +3,7 @@
 using namespace std;
 
 
-Analyzer::Analyzer(string jetType) : chain("Delphes"),  treeReader(new TTreeReader(&chain)), Electron(treeReader, "Electron", 0), Muon_T(treeReader, "MuonTight", 0), Muon_L(treeReader, "MuonLoose", 0), MET(*treeReader, "MissingET.MET"), MET_phi(*treeReader, "MissingET.Phi") {
+Analyzer::Analyzer(string jetType) : chain("Delphes"),  treeReader(new TTreeReader(&chain)), Electron(treeReader, "ElectronCHS", 0), Muon_T(treeReader, "MuonTightCHS", 0), Muon_L(treeReader, "MuonLoose", 0), MET(*treeReader, "MissingET.MET"), MET_phi(*treeReader, "MissingET.Phi") {
 
   Jet = Part(treeReader, jetType);
   
@@ -48,10 +48,11 @@ bool Analyzer::next() {
 }
     
 void Analyzer::selection() {
+  overlap(Muon_T);
   Muon_T.basic_cuts(15, 2.4, 0.15);
   Electron.basic_cuts(15, 2.5, 0.06);
   Jet.basic_cuts(30, 4.7); 
-  overlap(Muon_T);
+
 
   bool N_Jet_cut = (Jet.size() > 1); 
 

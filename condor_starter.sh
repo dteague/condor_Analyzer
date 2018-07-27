@@ -11,7 +11,7 @@ export X509_USER_PROXY=userproxy
 echo "$1 is input command"
 echo "$2 is file name"
 
-extraoption="-"p
+extraoption="-p"
 if [ $2 == "WZ_EWK" ]; then
     extraoption=""
 fi
@@ -20,4 +20,5 @@ ls
 mkdir obj
 make -j 10
 
+echo ./Analyzer -i sample_list_$1.dat -o test_$1.root $extraoption
 ./Analyzer -i sample_list_$1.dat -o test_$1.root $extraoption

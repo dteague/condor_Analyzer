@@ -12,6 +12,7 @@
 #include <TH1.h>
 #include <TFile.h>
 
+#include <bitset>
 #include <vector>
 
 using namespace std;
@@ -57,7 +58,7 @@ protected:
 
   vector<TLorentzVector> vecs;
   vector<int> thisCharge;
-  vector<bool> isBJet;
+  vector<uint> isBJet;
   vector<float> isoVar;
 };
 
