@@ -14,7 +14,7 @@ except ImportError:
     import os
     DEVNULL = open(os.devnull, 'wb')
 
-
+    
 Samplefile = open('Sample_list.txt', 'r')
 
 xrootd_area = ""

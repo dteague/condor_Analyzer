@@ -1,6 +1,6 @@
 #!/bin/bash
 
-file_area='/hdfs/store/user/dteague/delphes_WZ_YR/skimmed/'
+file_area='/hdfs/store/user/dteague/3top_Fall2017_files'
 
 for dir in $(find $file_area -maxdepth 1 ! -path $file_area); do
     sample=$(echo $dir | sed "s@${file_area}@@")
@@ -11,3 +11,4 @@ for dir in $(find $file_area -maxdepth 1 ! -path $file_area); do
 
 done
 	    
+ls .samples/ | sed 's/.txt//' > Sample_list.txt 

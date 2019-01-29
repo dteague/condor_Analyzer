@@ -14,7 +14,7 @@ stream_error 	     = True
 stream_output 	     = True
 
 
-Transfer_Input_Files = sample_list_$(Process).dat, ../src, ../userproxy, ../hist.config, ../condor_starter.sh, ../Makefile
+Transfer_Input_Files = sample_list_$(Process).dat, ../userproxy, ../condor_starter.sh, ../../Analyzer/src, ../../Analyzer/SpecialAna, ../../Analyzer/Pileup, ../../Analyzer/PartDet, ../../Analyzer/Makefile
 Transfer_Output_files = test_$(Process).root
 output               = output$(Process).out
 error 		     = error$(Process).err
